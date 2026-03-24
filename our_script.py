@@ -3,6 +3,13 @@ def sort_files():
     general_dir = Path(__file__).parent
     downloads_dir = general_dir / 'downloads'
 
+    suffixes = {
+        'code': ['.py', '.js', '.cpp'],
+        'audio': ['.mp3', '.wav'],
+        'images': ['.png', '.jpg', '.jpeg'],
+        'documents': ['.txt', '.pdf']
+    }
+
     images_dir = downloads_dir / 'images'
     audio_dir = downloads_dir / 'audio'
     code_dir = downloads_dir / 'code'
@@ -18,45 +25,26 @@ def sort_files():
     for file in downloads_dir.iterdir():
         if file.is_file():
             found_files = True
-            if file.suffix.lower() in ['.jpg', '.png', '.jpeg']:
-                target = images_dir / file.name
-                if not target.exists():
-                    file.replace(target)
-                    print(f"Файл додано до папки {images_dir}")
-                else:
-                    print(f"Файл {file.name} вже є в папці {images_dir}")
-            elif file.suffix.lower() in ['.pdf', '.txt']:
-                target = documents_dir / file.name
-                if not target.exists():
-                    file.replace(target)
-                    print(f"Файл додано до папки {documents_dir}")
-                else:
-                    print(f"Файл {file.name} вже є в папці {documents_dir}")
-            elif file.suffix.lower() in ['.py', '.js', '.cpp']:
-                target = code_dir / file.name
-                if not target.exists():
-                    file.replace(target)
-                    print(f"Файл додано до папки {code_dir}")
-                else:
-                    print(f"Файл {file.name} вже є в папці {code_dir}")
-
-            elif file.suffix.lower() in ['.mp3', '.wav']:
-                target = audio_dir / file.name
-                if not target.exists():
-                    file.replace(target)
-                    print(f"Файл додано до папки {audio_dir}")
-                else:
-                    print(f"Файл {file.name} вже є в папці {audio_dir}")
-
+            if file.suffix.lower() in suffixes['images']:
+                replace_file(file, images_dir)
+            elif file.suffix.lower() in suffixes['documents']:
+                replace_file(file, documents_dir)
+            elif file.suffix.lower() in suffixes['code']:
+                replace_file(file, code_dir)
+            elif file.suffix.lower() in suffixes['audio']:
+                replace_file(file, audio_dir)
             else:
-                target = others_dir / file.name
-                if not target.exists():
-                    file.replace(target)
-                    print(f"Файл додано до папки {others_dir}")
-                else:
-                    print(f"Файл {file.name} вже є в папці {others_dir}")
+                replace_file(file, others_dir)
     if not found_files:
         print("Файлів не знайдено для обробки")
+
+def replace_file(file, dir):
+    target = dir / file.name
+    if not target.exists():
+        file.replace(target)
+        print(f"{file.name} -> {dir.name}")
+    else:
+        print(f"Файл {file.name} вже знаходиться в папці {dir.name}")
 
 def show_struct():
     general_dir = Path(__file__).parent
