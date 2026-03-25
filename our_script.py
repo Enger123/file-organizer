@@ -1,7 +1,16 @@
 from pathlib import Path
+
 def sort_files():
     general_dir = Path(__file__).parent
     downloads_dir = general_dir / 'downloads'
+
+    stats = {
+        'images': 0,
+        'code': 0,
+        'documents': 0,
+        'audio': 0,
+        'others': 0
+    }
 
     suffixes = {
         'code': ['.py', '.js', '.cpp'],
@@ -27,16 +36,24 @@ def sort_files():
             found_files = True
             if file.suffix.lower() in suffixes['images']:
                 replace_file(file, images_dir)
+                stats['images'] += 1
             elif file.suffix.lower() in suffixes['documents']:
                 replace_file(file, documents_dir)
+                stats['documents'] += 1
             elif file.suffix.lower() in suffixes['code']:
                 replace_file(file, code_dir)
+                stats['code'] += 1
             elif file.suffix.lower() in suffixes['audio']:
                 replace_file(file, audio_dir)
+                stats['audio'] += 1
             else:
                 replace_file(file, others_dir)
+                stats['others'] += 1
     if not found_files:
         print("Файлів не знайдено для обробки")
+    print(f"\nРезультат переміщень: ")
+    for keys, values in stats.items():
+        print(f"{keys}: {values}")
 
 def replace_file(file, dir):
     target = dir / file.name
