@@ -35,20 +35,20 @@ def sort_files():
         if file.is_file():
             found_files = True
             if file.suffix.lower() in suffixes['images']:
-                replace_file(file, images_dir)
-                stats['images'] += 1
+                if replace_file(file, images_dir):
+                    stats['images'] += 1
             elif file.suffix.lower() in suffixes['documents']:
-                replace_file(file, documents_dir)
-                stats['documents'] += 1
+                if replace_file(file, documents_dir):
+                    stats['documents'] += 1
             elif file.suffix.lower() in suffixes['code']:
-                replace_file(file, code_dir)
-                stats['code'] += 1
+                if replace_file(file, code_dir):
+                    stats['code'] += 1
             elif file.suffix.lower() in suffixes['audio']:
-                replace_file(file, audio_dir)
-                stats['audio'] += 1
+                if replace_file(file, audio_dir):
+                    stats['audio'] += 1
             else:
-                replace_file(file, others_dir)
-                stats['others'] += 1
+                if replace_file(file, others_dir):
+                    stats['others'] += 1
     if not found_files:
         print("Файлів не знайдено для обробки")
     print(f"\nРезультат переміщень: ")
@@ -59,9 +59,26 @@ def replace_file(file, dir):
     target = dir / file.name
     if not target.exists():
         file.replace(target)
+        print(file)
         print(f"{file.name} -> {dir.name}")
+        return True
+    elif target.exists():
+        new_file = rename_file(file)
+        replace_file(new_file, dir)
+        return True
     else:
-        print(f"Файл {file.name} вже знаходиться в папці {dir.name}")
+        return False
+
+def rename_file(old_file):
+    base_name = old_file.stem.split("(")[0]
+    i = 1
+    new_file = old_file.with_name(f"{base_name}({i}){old_file.suffix}")
+    while new_file.exists():
+        new_file = old_file.with_name(f"{base_name}({i}){old_file.suffix}")
+        i += 1
+    old_file.replace(new_file)
+
+    return new_file
 
 def show_struct():
     general_dir = Path(__file__).parent
