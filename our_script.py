@@ -1,8 +1,11 @@
 from pathlib import Path
 
-def sort_files():
+def downloads():
     general_dir = Path(__file__).parent
-    downloads_dir = general_dir / 'downloads'
+    return general_dir / 'downloads'
+
+def sort_files():
+    downloads_dir = downloads()
 
     stats = {
         'images': 0,
@@ -76,8 +79,7 @@ def rename_file(old_file):
     return new_file
 
 def show_struct():
-    general_dir = Path(__file__).parent
-    downloads_dir = general_dir / 'downloads'
+    downloads_dir = downloads()
     for item in downloads_dir.iterdir():
         if item.is_dir():
             for file in item.iterdir():
@@ -93,20 +95,14 @@ def show_stats():
         'documents': 0,
         'others': 0
     }
-    general_dir = Path(__file__).parent
-    downloads_dir = general_dir / 'downloads'
+    downloads_dir = downloads()
     for item in downloads_dir.iterdir():
         if item.is_dir():
-            if item.name in general_stats:
-                for file in item.iterdir():
-                    if file.is_file():
-                        general_stats[item.name] += 1
-            else:
+            if not item.name in general_stats:
                 general_stats[item.name] = 0
-                for file in item.iterdir():
-                    if file.is_file():
-                        general_stats[item.name] += 1
-
+            for file in item.iterdir():
+                if file.is_file():
+                    general_stats[item.name] += 1
     for dirs, values in general_stats.items():
         print(f"{dirs} - {values} файлів")
 
