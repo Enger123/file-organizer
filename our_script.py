@@ -30,25 +30,26 @@ def sort_files():
     code_dir.mkdir(exist_ok=True)
     documents_dir.mkdir(exist_ok=True)
     others_dir.mkdir(exist_ok=True)
+
     found_files = False
     for file in downloads_dir.iterdir():
         if file.is_file():
             found_files = True
             if file.suffix.lower() in suffixes['images']:
-                if replace_file(file, images_dir):
-                    stats['images'] += 1
+                replace_file(file, images_dir)
+                stats['images'] += 1
             elif file.suffix.lower() in suffixes['documents']:
-                if replace_file(file, documents_dir):
-                    stats['documents'] += 1
+                replace_file(file, documents_dir)
+                stats['documents'] += 1
             elif file.suffix.lower() in suffixes['code']:
-                if replace_file(file, code_dir):
-                    stats['code'] += 1
+                replace_file(file, code_dir)
+                stats['code'] += 1
             elif file.suffix.lower() in suffixes['audio']:
-                if replace_file(file, audio_dir):
-                    stats['audio'] += 1
+                replace_file(file, audio_dir)
+                stats['audio'] += 1
             else:
-                if replace_file(file, others_dir):
-                    stats['others'] += 1
+                replace_file(file, others_dir)
+                stats['others'] += 1
     if not found_files:
         print("Файлів не знайдено для обробки")
     print(f"\nРезультат переміщень: ")
@@ -59,25 +60,19 @@ def replace_file(file, dir):
     target = dir / file.name
     if not target.exists():
         file.replace(target)
-        print(file)
         print(f"{file.name} -> {dir.name}")
-        return True
-    elif target.exists():
+    else:
         new_file = rename_file(file)
         replace_file(new_file, dir)
-        return True
-    else:
-        return False
 
 def rename_file(old_file):
     base_name = old_file.stem.split("(")[0]
     i = 1
-    new_file = old_file.with_name(f"{base_name}({i}){old_file.suffix}")
+    new_file = old_file.with_name(f"{base_name}{i}{old_file.suffix}")
     while new_file.exists():
-        new_file = old_file.with_name(f"{base_name}({i}){old_file.suffix}")
         i += 1
+        new_file = old_file.with_name(f"{base_name}{i}{old_file.suffix}")
     old_file.replace(new_file)
-
     return new_file
 
 def show_struct():
@@ -90,20 +85,48 @@ def show_struct():
         else:
             print(f"Файл {item.name}")
 
+def show_stats():
+    general_stats = {
+        'images': 0,
+        'code': 0,
+        'audio': 0,
+        'documents': 0,
+        'others': 0
+    }
+    general_dir = Path(__file__).parent
+    downloads_dir = general_dir / 'downloads'
+    for item in downloads_dir.iterdir():
+        if item.is_dir():
+            if item.name in general_stats:
+                for file in item.iterdir():
+                    if file.is_file():
+                        general_stats[item.name] += 1
+            else:
+                general_stats[item.name] = 0
+                for file in item.iterdir():
+                    if file.is_file():
+                        general_stats[item.name] += 1
+
+    for dirs, values in general_stats.items():
+        print(f"{dirs} - {values} файлів")
+
 def main():
     print("Ви у організаторі файлів")
     while True:
         print("\nВиберіть пункт: ")
         print("1 - відсортувати файли")
         print("2 - показати структуру папок")
-        print("3 - вийти")
+        print("3 - показати статистику по файлах в папках")
+        print("4 - вийти")
         num = input("Введіть цифру: ")
-        if num not in ('1', '2', '3'):
+        if num not in ('1', '2', '3', '4'):
             print("Ви вийшли за межі.")
         elif num == '1':
             sort_files()
         elif num == '2':
             show_struct()
+        elif num == '3':
+            show_stats()
         else:
             break
 
