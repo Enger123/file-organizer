@@ -7,56 +7,60 @@ def downloads():
 def sort_files():
     downloads_dir = downloads()
 
-    stats = {
-        'images': 0,
+    suffixes = {
+        'audio': ['.mp3', '.wav'],
+        'code': ['.py', '.js', '.cpp'],
+        'documents': ['.txt', '.pdf'],
+        'images': ['.jpeg', '.png', '.jpg']
+    }
+
+    stats_moved = {
+        'audio': 0,
         'code': 0,
         'documents': 0,
-        'audio': 0,
+        'images': 0,
         'others': 0
     }
 
-    suffixes = {
-        'code': ['.py', '.js', '.cpp'],
-        'audio': ['.mp3', '.wav'],
-        'images': ['.png', '.jpg', '.jpeg'],
-        'documents': ['.txt', '.pdf']
-    }
-
-    images_dir = downloads_dir / 'images'
     audio_dir = downloads_dir / 'audio'
     code_dir = downloads_dir / 'code'
     documents_dir = downloads_dir / 'documents'
+    images_dir = downloads_dir / 'images'
     others_dir = downloads_dir / 'others'
 
-    images_dir.mkdir(exist_ok=True)
     audio_dir.mkdir(exist_ok=True)
     code_dir.mkdir(exist_ok=True)
     documents_dir.mkdir(exist_ok=True)
+    images_dir.mkdir(exist_ok=True)
     others_dir.mkdir(exist_ok=True)
+
+    for item in downloads_dir.iterdir():
+        if item.is_dir() and item.name not in suffixes and item.name != 'others':
+            print(f"До папки {item.name} немає суфіксів, по яким перекидати файли")
+            suffix = input(f"Введіть суфікси для папки {item.name} через кому: ").strip().split(", ")
+            suffixes[item.name] = suffix
+            stats_moved[item.name] = 0
 
     found_files = False
     for file in downloads_dir.iterdir():
         if file.is_file():
             found_files = True
-            if file.suffix.lower() in suffixes['images']:
-                replace_file(file, images_dir)
-                stats['images'] += 1
-            elif file.suffix.lower() in suffixes['documents']:
-                replace_file(file, documents_dir)
-                stats['documents'] += 1
-            elif file.suffix.lower() in suffixes['code']:
-                replace_file(file, code_dir)
-                stats['code'] += 1
-            elif file.suffix.lower() in suffixes['audio']:
-                replace_file(file, audio_dir)
-                stats['audio'] += 1
-            else:
+            matched = False
+            for dir_name in suffixes:
+                target_dir = downloads_dir / dir_name
+                if file.suffix.lower() in suffixes[dir_name]:
+                    matched = True
+                    replace_file(file, target_dir)
+                    stats_moved[dir_name] += 1
+                    break
+            if not matched:
                 replace_file(file, others_dir)
-                stats['others'] += 1
+                stats_moved['others'] += 1
+
     if not found_files:
         print("Файлів не знайдено для обробки")
     print(f"\nРезультат переміщень: ")
-    for keys, values in stats.items():
+    for keys, values in stats_moved.items():
         print(f"{keys}: {values}")
 
 def replace_file(file, dir):
